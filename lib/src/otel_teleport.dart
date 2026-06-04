@@ -2,7 +2,6 @@
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
 import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
-import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_teleport_suppression.dart';
 
@@ -56,57 +55,72 @@ Future<T> tracedTeleport<T>({
   final t = tracer ?? OTel.tracerProvider().getTracer('otel_teleport');
   final span = t.startSpan('teleport $operation', kind: SpanKind.client);
   try {
-    span.setStringAttribute('rpc.system', 'teleport');
+    span.addAttributes(
+        OTel.attributes([OTel.attributeString('rpc.system', 'teleport')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.cluster != null) {
-        span.setStringAttribute('teleport.cluster', res.cluster!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('teleport.cluster', res.cluster!)]));
       }
       if (res.proxyAddress != null) {
-        span.setStringAttribute('server.address', res.proxyAddress!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('server.address', res.proxyAddress!)]));
       }
       if (res.user != null) {
-        span.setStringAttribute('user.email', res.user!);
+        span.addAttributes(
+            OTel.attributes([OTel.attributeString('user.email', res.user!)]));
       }
       if (res.role != null) {
-        span.setStringAttribute('teleport.role', res.role!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('teleport.role', res.role!)]));
       }
       if (res.nodeName != null) {
-        span.setStringAttribute('teleport.node.name', res.nodeName!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('teleport.node.name', res.nodeName!)]));
       }
       if (res.nodeKind != null) {
-        span.setStringAttribute('teleport.node.kind', res.nodeKind!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('teleport.node.kind', res.nodeKind!)]));
       }
       if (res.sessionId != null) {
-        span.setStringAttribute('teleport.session.id', res.sessionId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('teleport.session.id', res.sessionId!)]));
       }
       if (res.recordingMode != null) {
-        span.setStringAttribute(
-          'teleport.session.recording_mode',
-          res.recordingMode!,
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            'teleport.session.recording_mode',
+            res.recordingMode!,
+          )
+        ]));
       }
       if (res.mfa != null) {
-        span.setBoolAttribute('teleport.mfa', res.mfa!);
+        span.addAttributes(
+            OTel.attributes([OTel.attributeBool('teleport.mfa', res.mfa!)]));
       }
       if (res.deviceTrust != null) {
-        span.setBoolAttribute('teleport.device_trust', res.deviceTrust!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeBool('teleport.device_trust', res.deviceTrust!)]));
       }
       if (res.statusCode != null) {
-        span.setIntAttribute('http.response.status_code', res.statusCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
       }
       if (res.errorCode != null) {
-        span.setStringAttribute('teleport.error.code', res.errorCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('teleport.error.code', res.errorCode!)]));
       }
-      final fail =
-          res.errorCode != null ||
+      final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.setStringAttribute(
-          ErrorResource.errorType.key,
-          res.errorCode ?? 'teleport.error',
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            ErrorResource.errorType.key,
+            res.errorCode ?? 'teleport.error',
+          )
+        ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
     }
